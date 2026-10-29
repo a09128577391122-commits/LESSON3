@@ -67,7 +67,7 @@
         } else if (e.key === 'Escape') { e.preventDefault(); if(this.modal) this.resume(); else this.pause(); }
       });
       this.bind(document,'visibilitychange',() => { if (document.hidden) this.pause('遊戲已暫停。準備好再繼續。'); });
-      this.bind(window,'blur',() => this.pause('遊戲已暫停。準備好再繼續。'));
+      this.bind(window,'blur',() => {root.RunnerAudio.mixer.suspend();this.pause('遊戲已暫停。準備好再繼續。');});
     }
     event(type,data) {
       if (this.destroyed) return;
@@ -143,7 +143,7 @@
       this.dimensions={w,h}; const dpr=Math.min(window.devicePixelRatio||1,2);
       this.canvas.width=w*dpr;this.canvas.height=h*dpr;this.ctx.setTransform(dpr,0,0,dpr,0,0);
       if(!first && this.model && this.model.phase!=='result') {
-        this.model.safeReset();this.pause('畫面已調整，這一波從安全位置重新出發。');
+        // Browser bars/fullscreen resize only redraw the canvas; preserve the wave and position.
       }
     }
     audioStatus(status) {
@@ -179,7 +179,7 @@
     }
     resume() {
       if (!this.modal || this.destroyed) return;
-      this.modal.remove();this.modal=null;this.stage.classList.remove('paused');this.model.resume();this.voice.resume();this.lastTick=null;
+      this.modal.remove();this.modal=null;this.stage.classList.remove('paused');root.RunnerAudio.mixer.unlock();this.model.resume();this.voice.resume();this.lastTick=null;
       if(this.previousFocus?.isConnected)this.previousFocus.focus();
     }
     result() {
